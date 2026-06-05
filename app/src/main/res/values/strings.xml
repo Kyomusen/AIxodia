@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AIxodia</string>
+    <string name="overlay_channel_id">aixodia_overlay</string>
+    <string name="overlay_channel_name">AIxodia Overlay</string>
+    <string name="overlay_notification_title">AIxodia is running</string>
+    <string name="overlay_notification_text">Tap to open settings</string>
+    <string name="accessibility_description">AIxodia Screen Controller Service</string>
+</resources>
