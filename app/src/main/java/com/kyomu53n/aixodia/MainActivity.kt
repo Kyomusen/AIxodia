@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        findViewById<Button>(R.id.btnRequestCapture).setOnClickListener {
+            startActivityForResult(projectionManager.createScreenCaptureIntent(), REQ_PROJECT)
+        }
+
         findViewById<Button>(R.id.btnStart).setOnClickListener {
             val key = configManager.getApiKey()
             if (key.isEmpty()) return@setOnClickListener
@@ -119,6 +123,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnRequestOverlay).visibility = if (hasOverlay) View.GONE else View.VISIBLE
         findViewById<Button>(R.id.btnRequestNotification).visibility =
             if (hasNotification || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) View.GONE else View.VISIBLE
+
+        findViewById<Button>(R.id.btnRequestCapture).visibility =
+            if (captureResultCode != null) View.GONE else View.VISIBLE
 
         val statusText = buildString {
             append("Permissions:\n")
