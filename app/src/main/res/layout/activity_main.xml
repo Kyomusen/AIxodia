@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="#0d0d1a">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,7 +13,8 @@
         android:layout_marginTop="32dp"
         android:text="AIxodia"
         android:textSize="28sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="#ffffff" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -20,7 +22,7 @@
         android:layout_marginTop="4dp"
         android:text="AI Automation Agent"
         android:textSize="14sp"
-        android:textColor="#666666" />
+        android:textColor="#888888" />
 
     <TextView
         android:id="@+id/tvApiKeyStatus"
@@ -33,17 +35,18 @@
         android:textSize="14sp" />
 
     <EditText
-        android:id="@+id/etApiKey"
+        android:id="@+id/etKey"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="Gemini API Key"
         android:inputType="text"
         android:padding="12dp"
-        android:background="@android:drawable/editbox_background" />
+        android:textColor="#ffffff"
+        android:background="#333344" />
 
     <Button
-        android:id="@+id/btnSaveApiKey"
+        android:id="@+id/btnValidate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -57,6 +60,7 @@
         android:gravity="center"
         android:text="Checking permissions..."
         android:textSize="14sp"
+        android:textColor="#aaaaaa"
         android:lineSpacingExtra="4dp" />
 
     <Button
@@ -68,14 +72,6 @@
         android:visibility="gone" />
 
     <Button
-        android:id="@+id/btnRequestAccessibility"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Grant Accessibility Permission"
-        android:visibility="gone" />
-
-    <Button
         android:id="@+id/btnRequestNotification"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -84,14 +80,7 @@
         android:visibility="gone" />
 
     <Button
-        android:id="@+id/btnRequestCapture"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Grant Screen Capture Permission" />
-
-    <Button
-        android:id="@+id/btnStartService"
+        android:id="@+id/btnStart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -99,11 +88,10 @@
         android:enabled="false"
         android:textStyle="bold" />
 
-    <TextView
-        android:layout_width="wrap_content"
+    <Button
+        android:id="@+id/btnExit"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="v1.0"
-        android:textColor="#999999" />
-
+        android:layout_marginTop="8dp"
+        android:text="Exit" />
 </LinearLayout>

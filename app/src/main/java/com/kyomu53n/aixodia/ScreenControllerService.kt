@@ -25,15 +25,15 @@ class ScreenControllerService : AccessibilityService() {
         }
 
         fun performClick(x: Int, y: Int): Boolean {
-            return sharedInstance?.performTap(x, y) ?: false
+            return sharedInstance?.performTap(x.toFloat(), y.toFloat()) ?: false
         }
 
         fun performSwipe(x1: Int, y1: Int, x2: Int, y2: Int, duration: Long): Boolean {
-            return sharedInstance?.performSwipeInternal(x1, y1, x2, y2, duration) ?: false
+            return sharedInstance?.performSwipeInternal(x1.toFloat(), y1.toFloat(), x2.toFloat(), y2.toFloat(), duration) ?: false
         }
 
         fun performLongPress(x: Int, y: Int): Boolean {
-            return sharedInstance?.performLongPressInternal(x, y) ?: false
+            return sharedInstance?.performLongPressInternal(x.toFloat(), y.toFloat()) ?: false
         }
 
         fun performInputText(text: String): Boolean {
@@ -41,7 +41,15 @@ class ScreenControllerService : AccessibilityService() {
         }
 
         fun performPressBack(): Boolean {
-            return sharedInstance?.performPressBackInternal() ?: false
+            return sharedInstance?.performGlobalAction(GLOBAL_ACTION_BACK) ?: false
+        }
+
+        fun tap(x: Float, y: Float) {
+            sharedInstance?.performTap(x, y)
+        }
+
+        fun tapTimed(x: Float, y: Float, duration: Long) {
+            sharedInstance?.tapTimedInternal(x, y, duration)
         }
     }
 
@@ -50,7 +58,7 @@ class ScreenControllerService : AccessibilityService() {
         sharedInstance = this
     }
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent) {}
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
     override fun onInterrupt() {}
 
@@ -93,39 +101,38 @@ class ScreenControllerService : AccessibilityService() {
             val childJson = JSONObject()
             parseNode(child, childJson)
             childrenArray.put(childJson)
-            child.recycle()
         }
         if (childrenArray.length() > 0) {
             json.put("children", childrenArray)
         }
     }
 
-    private fun performTap(x: Int, y: Int): Boolean {
-        val path = Path()
-        path.moveTo(x.toFloat(), y.toFloat())
-        val gestureBuilder = GestureDescription.Builder()
-        val strokeDescription = GestureDescription.StrokeDescription(path, 0, 50)
-        gestureBuilder.addStroke(strokeDescription)
-        return dispatchGesture(gestureBuilder.build(), null, null)
+    private fun performTap(x: Float, y: Float): Boolean {
+        val path = Path().apply { moveTo(x, y) }
+        val stroke = GestureDescription.StrokeDescription(path, 0L, 50L)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        return dispatchGesture(gesture, null, null)
     }
 
-    private fun performSwipeInternal(x1: Int, y1: Int, x2: Int, y2: Int, duration: Long): Boolean {
-        val path = Path()
-        path.moveTo(x1.toFloat(), y1.toFloat())
-        path.lineTo(x2.toFloat(), y2.toFloat())
-        val gestureBuilder = GestureDescription.Builder()
-        val strokeDescription = GestureDescription.StrokeDescription(path, 0, duration)
-        gestureBuilder.addStroke(strokeDescription)
-        return dispatchGesture(gestureBuilder.build(), null, null)
+    private fun performSwipeInternal(x1: Float, y1: Float, x2: Float, y2: Float, duration: Long): Boolean {
+        val path = Path().apply { moveTo(x1, y1); lineTo(x2, y2) }
+        val stroke = GestureDescription.StrokeDescription(path, 0L, duration)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        return dispatchGesture(gesture, null, null)
     }
 
-    private fun performLongPressInternal(x: Int, y: Int): Boolean {
-        val path = Path()
-        path.moveTo(x.toFloat(), y.toFloat())
-        val gestureBuilder = GestureDescription.Builder()
-        val strokeDescription = GestureDescription.StrokeDescription(path, 0, 1000)
-        gestureBuilder.addStroke(strokeDescription)
-        return dispatchGesture(gestureBuilder.build(), null, null)
+    private fun performLongPressInternal(x: Float, y: Float): Boolean {
+        val path = Path().apply { moveTo(x, y) }
+        val stroke = GestureDescription.StrokeDescription(path, 0L, 1000L)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        return dispatchGesture(gesture, null, null)
+    }
+
+    private fun tapTimedInternal(x: Float, y: Float, duration: Long) {
+        val path = Path().apply { moveTo(x, y) }
+        val stroke = GestureDescription.StrokeDescription(path, 0L, maxOf(duration, 1L))
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+        dispatchGesture(gesture, null, null)
     }
 
     private fun performInputTextInternal(text: String): Boolean {
@@ -134,13 +141,8 @@ class ScreenControllerService : AccessibilityService() {
         val arguments = Bundle()
         arguments.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
         val result = focusedNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, arguments)
-        focusedNode.recycle()
         root.recycle()
         return result
-    }
-
-    private fun performPressBackInternal(): Boolean {
-        return performGlobalAction(GLOBAL_ACTION_BACK)
     }
 
     private fun findFocusedNode(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
@@ -150,11 +152,7 @@ class ScreenControllerService : AccessibilityService() {
         for (i in 0 until node.childCount) {
             val child = node.getChild(i) ?: continue
             val found = findFocusedNode(child)
-            if (found != null) {
-                child.recycle()
-                return found
-            }
-            child.recycle()
+            if (found != null) return found
         }
         return null
     }

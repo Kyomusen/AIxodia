@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#EE0d0d1a"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🤖 AIxodia"
+            android:textSize="12sp"
+            android:textColor="#e0e0e0"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tvRunStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Idle"
+            android:textSize="11sp"
+            android:textColor="#ff6b6b"/>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/etCommand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter command for AI..."
+        android:textSize="11sp"
+        android:textColor="#ffffff"
+        android:padding="6dp"
+        android:background="#333344"
+        android:layout_marginBottom="4dp"
+        android:inputType="text"
+        android:singleLine="true" />
+
+    <ScrollView
+        android:id="@+id/scrollLog"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="#060610"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/tvLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="10sp"
+            android:textColor="#00ff88"
+            android:fontFamily="monospace"
+            android:text="[Ready]"/>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btnAutoStart"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:text="Start"
+            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:backgroundTint="#2E7D32"
+            android:layout_marginEnd="3dp"
+            android:padding="0dp"/>
+
+        <Button
+            android:id="@+id/btnAutoStop"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:text="Stop"
+            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:backgroundTint="#E65100"
+            android:layout_marginEnd="3dp"
+            android:padding="0dp"/>
+
+        <Button
+            android:id="@+id/btnHide"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:text="Hide"
+            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:backgroundTint="#37474F"
+            android:layout_marginEnd="3dp"
+            android:padding="0dp"/>
+
+        <Button
+            android:id="@+id/btnClose"
+            android:layout_width="0dp"
+            android:layout_height="34dp"
+            android:layout_weight="1"
+            android:text="Exit"
+            android:textSize="12sp"
+            android:textColor="#ffffff"
+            android:backgroundTint="#B71C1C"
+            android:padding="0dp"/>
+    </LinearLayout>
+</LinearLayout>
