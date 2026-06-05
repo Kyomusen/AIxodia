@@ -6,74 +6,93 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.PixelFormat
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.*
 
 class OverlayService : Service() {
 
+    private lateinit var wm: WindowManager
     private lateinit var floatingWindow: FloatingControlWindow
     private lateinit var executorAgent: ExecutorAgent
     private var isAiRunning = false
+    private var mediaProjection: MediaProjection? = null
+
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        floatingWindow = FloatingControlWindow(this)
+        executorAgent = ExecutorAgent(this, resources.displayMetrics) { msg ->
+            floatingWindow.appendLog(msg)
+        }
+
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
 
-        floatingWindow = FloatingControlWindow(this)
-        executorAgent = ExecutorAgent(this)
-
         setupVolumeUpCallback()
         setupFloatingWindowCallbacks()
-
-        // Start ScreenCaptureService if projection was set up by MainActivity
-        if (ScreenCaptureService.mediaProjectionReady()) {
-            startService(Intent(this, ScreenCaptureService::class.java))
-        }
 
         floatingWindow.show(FloatingControlWindow.Mode.INTERACTIVE)
         floatingWindow.appendLog("AIxodia ready. Enter a command and press Start.")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Handle capture result if passed from MainActivity
         intent?.let {
-            val resultCode = it.getIntExtra("RESULT_CODE", -1)
+            val code = it.getIntExtra("proj_code", -1)
             val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                it.getParcelableExtra("DATA", Intent::class.java)
+                it.getParcelableExtra("proj_data", Intent::class.java)
             } else {
                 @Suppress("DEPRECATION")
-                it.getParcelableExtra("DATA")
+                it.getParcelableExtra<Intent>("proj_data")
             }
-            if (resultCode != -1 && data != null) {
-                val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as android.media.projection.MediaProjectionManager
-                val metrics = resources.displayMetrics
-                ScreenCaptureService.setupProjection(
-                    resultCode = resultCode,
-                    data = data,
-                    manager = manager,
-                    width = metrics.widthPixels,
-                    height = metrics.heightPixels,
-                    density = metrics.densityDpi
-                )
-                startService(Intent(this, ScreenCaptureService::class.java).apply {
-                    putExtra("RESULT_CODE", resultCode)
-                    putExtra("DATA", data)
-                })
+
+            if (data != null && mediaProjection == null) {
+                serviceScope.launch {
+                    try {
+                        val projection = withContext(Dispatchers.IO) {
+                            (getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager)
+                                .getMediaProjection(code, data)
+                        }
+                        if (projection != null) {
+                            projection.registerCallback(object : MediaProjection.Callback() {
+                                override fun onStop() {
+                                    floatingWindow.appendLog("Screen Capture stopped")
+                                }
+                            }, null)
+                            mediaProjection = projection
+                            executorAgent.setupProjection(projection)
+                            floatingWindow.appendLog("Screen Capture ready")
+                        }
+                    } catch (e: Exception) {
+                        floatingWindow.appendLog("Error: ${e.message}")
+                    }
+                }
             }
         }
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? = null
-
     override fun onDestroy() {
+        serviceScope.cancel()
         stopAi()
         floatingWindow.dismiss()
         ScreenControllerService.onVolumeUpPressed = null
-        stopService(Intent(this, ScreenCaptureService::class.java))
+        executorAgent.destroy()
+        mediaProjection?.stop()
+        mediaProjection = null
         super.onDestroy()
     }
 
@@ -110,6 +129,11 @@ class OverlayService : Service() {
             return
         }
 
+        if (!executorAgent.isProjectionReady) {
+            floatingWindow.appendLog("Error: Screen Capture not ready.")
+            return
+        }
+
         isAiRunning = true
         floatingWindow.setStartButtonText("Stop (Vol↑)")
         floatingWindow.switchMode(FloatingControlWindow.Mode.PASSTHROUGH)
@@ -117,23 +141,12 @@ class OverlayService : Service() {
         floatingWindow.setStatusText("● Running")
         floatingWindow.setStatusColor(ContextCompat.getColor(this, R.color.statusRunning))
 
-        // Ensure ScreenCaptureService is running
-        if (!ScreenCaptureService.isServiceRunning) {
-            startService(Intent(this, ScreenCaptureService::class.java))
-        }
-
-        ScreenCaptureService.startOverlay(this)
-
-        executorAgent.startExecutionLoop(command) { log ->
-            floatingWindow.appendLog(log)
-        }
+        executorAgent.start(command)
     }
 
     private fun stopAi() {
         isAiRunning = false
-        executorAgent.stopExecutionLoop()
-        ScreenCaptureService.stopOverlay()
-
+        executorAgent.stop()
         floatingWindow.setStartButtonText("Start")
         floatingWindow.switchMode(FloatingControlWindow.Mode.INTERACTIVE)
         floatingWindow.appendLog("AI stopped.")

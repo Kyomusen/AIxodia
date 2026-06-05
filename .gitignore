@@ -7,3 +7,4 @@
 .externalNativeBuild
 .DS_Store
 /app/build
+*.apk

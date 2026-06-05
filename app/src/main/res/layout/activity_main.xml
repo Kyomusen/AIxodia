@@ -38,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="Gemini API Key"
-        android:inputType="textPassword"
+        android:inputType="text"
         android:padding="12dp"
         android:background="@android:drawable/editbox_background" />
 
@@ -76,11 +76,18 @@
         android:visibility="gone" />
 
     <Button
+        android:id="@+id/btnRequestNotification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Grant Notification Permission"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnRequestCapture"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:onClick="requestScreenCapture"
         android:text="Grant Screen Capture Permission" />
 
     <Button
